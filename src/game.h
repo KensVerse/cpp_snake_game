@@ -19,6 +19,10 @@ class Game {
   Snake snake;
   SDL_Point food;
 
+  // adding private members poison and diet pill
+  SDL_Point poison;
+  SDL_Point dietpill;
+
   std::random_device dev;
   std::mt19937 engine;
   std::uniform_int_distribution<int> random_w;
@@ -26,7 +30,8 @@ class Game {
 
   int score{0};
 
-  void PlaceFood();
+  // modifying function name, as the this function will place food, poison and diet pill together
+  void PlaceFoodPoisonDietpill();
   void Update();
 };
 

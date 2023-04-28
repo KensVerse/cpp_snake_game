@@ -17,6 +17,8 @@ class Snake {
   void Update();
 
   void GrowBody();
+  // adding setter for private member shrinking
+  void ShrinkBody();
   bool SnakeCell(int x, int y);
 
   Direction direction = Direction::kUp;
@@ -33,6 +35,8 @@ class Snake {
   void UpdateBody(SDL_Point &current_cell, SDL_Point &prev_cell);
 
   bool growing{false};
+  // adding private member shrinking
+  bool shrinking{false};
   int grid_width;
   int grid_height;
 };

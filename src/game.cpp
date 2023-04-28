@@ -7,7 +7,7 @@ Game::Game(std::size_t grid_width, std::size_t grid_height)
       engine(dev()),
       random_w(0, static_cast<int>(grid_width - 1)),
       random_h(0, static_cast<int>(grid_height - 1)) {
-  PlaceFood();
+  PlaceFoodPoisonDietpill();
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -25,7 +25,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, snake);
     Update();
-    renderer.Render(snake, food);
+    renderer.Render(snake, food, poison, dietpill);
 
     frame_end = SDL_GetTicks();
 
@@ -50,16 +50,30 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   }
 }
 
-void Game::PlaceFood() {
-  int x, y;
+void Game::PlaceFoodPoisonDietpill() {
+  int x, y, w, z, u, v;
   while (true) {
+    // food
     x = random_w(engine);
     y = random_h(engine);
-    // Check that the location is not occupied by a snake item before placing
-    // food.
-    if (!snake.SnakeCell(x, y)) {
+
+    // poison
+    w = random_w(engine);
+    z = random_h(engine);
+
+    //diet pill
+    u = random_w(engine);
+    v = random_h(engine);
+    // Check that the location is not occupied by a snake item before placing, and that locations of food, poison and diet pills are not overlapping
+    if ((!snake.SnakeCell(x, y)) && (!snake.SnakeCell(w, z)) && (!snake.SnakeCell(u, v)) && ((x != w) || (y != z)) && ((x != u) || (y != v)) && ((u != w) || (v != z))) {
       food.x = x;
       food.y = y;
+
+      poison.x = w;
+      poison.y = z;
+
+      dietpill.x = u;
+      dietpill.y = v;
       return;
     }
   }
@@ -72,14 +86,26 @@ void Game::Update() {
 
   int new_x = static_cast<int>(snake.head_x);
   int new_y = static_cast<int>(snake.head_y);
-
-  // Check if there's food over here
+  // check if poison is taken
+  if (poison.x == new_x && poison.y == new_y) {
+  	snake.alive = false;
+    return;
+  }
+  // Check if there's food or diet pill over here
   if (food.x == new_x && food.y == new_y) {
     score++;
-    PlaceFood();
+    PlaceFoodPoisonDietpill();
     // Grow snake and increase speed.
     snake.GrowBody();
-    snake.speed += 0.02;
+    snake.speed += 0.002;
+    return;
+  }
+  if (dietpill.x == new_x && dietpill.y == new_y) {
+    // deduct score only when snake's body size is larger than 2
+    if (snake.body.size() > 2) score--;
+    PlaceFoodPoisonDietpill();
+    snake.ShrinkBody();
+    snake.speed -= 0.002;
   }
 }
 
